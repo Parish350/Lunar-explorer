@@ -1,69 +1,131 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React, { useState, useEffect } from "react";
+import { Navbar } from "@/components/Navbar";
+import { Starfield } from "@/components/Starfield";
+import { HeroSection } from "@/components/HeroSection";
+import { MissionsSection } from "@/components/MissionsSection";
+import { TimelineSection } from "@/components/TimelineSection";
+import { FactsSection } from "@/components/FactsSection";
+import { QuizSection } from "@/components/QuizSection";
+import { JourneyTracker } from "@/components/JourneyTracker";
+import { LunaAI } from "@/components/LunaAI";
+import { Footer } from "@/components/Footer";
+
+export default function LunarExplorerApp() {
+  const [activeSection, setActiveSection] = useState<string>("hero");
+  const [currentJourneyStage, setCurrentJourneyStage] = useState<number>(0);
+  const [isLunaOpen, setIsLunaOpen] = useState<boolean>(false);
+
+  // Smooth scroll handler
+  const handleNavigate = (sectionId: string) => {
+    setActiveSection(sectionId);
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  // Stage mapping for storytelling tracker
+  const stageToSection = ["hero", "timeline", "missions", "facts", "luna", "quiz"];
+  const handleSelectStage = (stageIdx: number) => {
+    setCurrentJourneyStage(stageIdx);
+    const target = stageToSection[stageIdx];
+    if (target === "luna") {
+      setIsLunaOpen(true);
+    } else {
+      handleNavigate(target);
+    }
+  };
+
+  // Listen to scroll position to update active navbar highlight and astronaut flight stage
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPos = window.scrollY + 250;
+      const sections = ["hero", "missions", "timeline", "facts", "quiz"];
+
+      for (const section of sections) {
+        const el = document.getElementById(section);
+        if (el) {
+          const top = el.offsetTop;
+          const height = el.offsetHeight;
+          if (scrollPos >= top && scrollPos < top + height) {
+            setActiveSection(section);
+            if (section === "hero") setCurrentJourneyStage(0);
+            if (section === "timeline") setCurrentJourneyStage(1);
+            if (section === "missions") setCurrentJourneyStage(2);
+            if (section === "facts") setCurrentJourneyStage(3);
+            if (section === "quiz") setCurrentJourneyStage(5);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-cyan-500 selection:text-slate-950 overflow-x-hidden relative">
+      {/* Dynamic Animated Starfield & Deep-Space Nebula Canvas */}
+      <Starfield />
+
+      {/* Persistent Navigation */}
+      <Navbar
+        activeSection={activeSection}
+        onNavigate={handleNavigate}
+        onOpenLuna={() => setIsLunaOpen(true)}
+      />
+
+      {/* Main Experience Modules */}
+      <main className="relative z-10 flex flex-col space-y-16 sm:space-y-24">
+        {/* 1. Hero Section: Animated Moon Sphere, Briefing, and Feature Cards */}
+        <HeroSection
+          onBeginMission={() => {
+            setCurrentJourneyStage(1);
+            handleNavigate("missions");
+          }}
+          onExploreTimeline={() => {
+            setCurrentJourneyStage(1);
+            handleNavigate("timeline");
+          }}
+          onNavigateToCard={(cardId) => {
+            handleNavigate(cardId);
+          }}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+
+        {/* 2. Missions Section: Apollo 8, 11, 12, 13, 15, 17 & Artemis I, II, III */}
+        <MissionsSection />
+
+        {/* 3. Timeline Section: Luna 2 (1959) to Artemis & Gateway (2020s) */}
+        <TimelineSection />
+
+        {/* 4. Moon Facts: Distance, Moonlight, Tidal Locking, Gravity, Extreme Temps, Moonquakes, Craters, Drift */}
+        <FactsSection />
+
+        {/* 5. Moon Quiz: Mission Control 12-Question Evaluation */}
+        <QuizSection />
       </main>
+
+      {/* Interactive Storytelling Astronaut Flight Plan Tracker */}
+      <JourneyTracker
+        currentStage={currentJourneyStage}
+        onSelectStage={handleSelectStage}
+      />
+
+      {/* Built-in Real-Time Luna AI Floating Space Guide */}
+      <LunaAI
+        isOpen={isLunaOpen}
+        onClose={() => setIsLunaOpen(false)}
+        onOpen={() => {
+          setIsLunaOpen(true);
+          setCurrentJourneyStage(4);
+        }}
+      />
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
